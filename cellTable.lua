@@ -6,10 +6,9 @@ local scene=composer.newScene();
 
 
 --colors of scene
-local backgroundColor = {1,1,1}
-
-local aliveCellColor={default={1,1,1,1}}
-local aliveCellBorderColor={default={0,0,0,1}}
+local deadCellColor={1,1,1}   --WHITE
+local aliveCellColor={0,0,0} --BLACK   
+local CellBorderColor={0.502,0.502,0.502}
 
 
 local width=display.actualContentWidth
@@ -17,27 +16,24 @@ local height=display.actualContentHeight
 
 local cellNumber=5   --number of cells er side
 
-local function changeState(event)
-    local state=event.target.id
-    if state==1 then state=0
-    else state=1
+function setColor(state)
+    if state==0 then
+        return unpack(deadCellColor)
+    else 
+        return unpack(aliveCellColor)
     end
 end
 
-function makeButton(x,y,cellSide)
-    button= widget.newButton({
-        id=1,
-        onRelease=changeState,
-        shape = "Rect",
-        x=x,
-        y=y,
-        width = cellSide,
-		height = cellSide,
-        fillColor=aliveCellColor,
-        strokeColor = aliveCellBorderColor,
-		strokeWidth = 5
-    }
-    );
+function makeButton(x,y,cellSide,state)
+    
+    -- Create a rectangle as the background of the button
+    local button = display.newRect( x, y, cellSide, cellSide)
+    button.strokeWidth = 5
+    button:setStrokeColor(unpack(CellBorderColor))
+    button:setFillColor(setColor(state)) -- Set the background color based on state
+    
+
+       
     return button
 end
 
@@ -50,15 +46,19 @@ local function divideBackground(sceneGroup,rectWidth)
 
     local grid={}
     local x=0
-    
-    for j=zeroY,(zeroY*cellNumber+zeroY)/2, cellSide do
+    for i= zeroX,zeroX*cellNumber+zeroX, cellSide do
         local y=0
         grid[x]={}
-        for i= zeroX,zeroX*cellNumber+zeroX, cellSide do
-
-            local cell=makeButton(i,j,cellSide)
+        for j=zeroY,(zeroY*cellNumber+zeroY)/2, cellSide do   
+            local cell
+            if x==2 and y>0 and y<4 then 
+                cell=makeButton(i,j,cellSide,1)
+            else 
+                cell=makeButton(i,j,cellSide,0)
+            end
             sceneGroup:insert(cell)
             grid[x][y]=cell.id
+
             y=y+1
         end
         x=x+1
@@ -75,7 +75,6 @@ function scene:create(event)
     local rectWidth=width-width/7
 
     local background=display.newRect(x,y,rectWidth,rectWidth) --creating backgroud
-    background:setFillColor(unpack(backgroundColor))
     sceneGroup:insert(background)
 
     divideBackground(sceneGroup,rectWidth)
